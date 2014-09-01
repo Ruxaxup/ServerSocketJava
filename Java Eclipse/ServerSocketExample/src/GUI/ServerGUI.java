@@ -15,12 +15,15 @@ import javax.swing.border.TitledBorder;
 import controllers.ServerHandler;
 
 public class ServerGUI extends JFrame implements ActionListener{
+	
+	private static final long serialVersionUID = -4852092346198931L;
 	private JButton startServer;
 	private JButton stopServer;
 	private JButton cleanConsole;
 	private JTextArea clientRequest;
 	
 	private ServerHandler server;
+	
 	
 	public ServerGUI(){
 		/** Initiate GUI components **/

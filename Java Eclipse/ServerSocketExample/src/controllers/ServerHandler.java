@@ -1,14 +1,14 @@
 package controllers;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.Vector;
 
 import javax.swing.JTextArea;
+
+import models.Client;
 
 public class ServerHandler implements Runnable{
 	public static final int PORT = 8080;
@@ -16,10 +16,17 @@ public class ServerHandler implements Runnable{
 	private ServerSocket serverSocket;
 	private JTextArea clientRequest;
 	
+	public static Vector<Client> clientTable;
+	
+	static{
+		clientTable = new Vector<>();
+	}
+	
 	public boolean init(JTextArea clientRequest){
 		this.clientRequest = clientRequest;
 		try {
-			serverSocket = new ServerSocket(PORT);
+			serverSocket = new ServerSocket(PORT,10);
+			
 			System.out.println("[Socket creado en puerto "+PORT+"].");
 			return true;
 		} catch (IOException e) {
@@ -39,7 +46,6 @@ public class ServerHandler implements Runnable{
 		try {
 			serverSocket.close();			
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		System.out.println("[Se ha detenido el servidor].");
@@ -55,34 +61,10 @@ public class ServerHandler implements Runnable{
 			try {
 				System.out.println("Esperando solicitud.");
 				clientRequest.append("Esperando solicitud.\n");
-				clientSocket = serverSocket.accept();				
-				System.out.println("[Se ha conectado un cliente].");
-				clientRequest.append("[Se ha conectado un cliente].\n");
-				
-				PrintWriter out = new PrintWriter(clientSocket.getOutputStream(),true);
-				BufferedReader br = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-				
-				String request = br.readLine();
-				clientRequest.append(request+"\n");
-				System.out.println(request);
-				String tokens [] = request.split("::");
-				if(tokens.length > 1){
-					request = tokens[1];
-					if(request.equalsIgnoreCase("hola")){
-						out.println("Hola :3 ^___^ xP");
-					}else if(request.equals("help")){
-						out.println("De momento la palabra 'hola' es la que te dice algo genial xD");
-					}else{
-						out.println("Tu mensaje ha sido recibido.");
-					}
-				}
-				
-				out.close();
-				System.out.println("[Salida cerrada].");
-				clientRequest.append("[Salida cerrada].\n");
-				br.close();
-				System.out.println("[Lector cerrado].");
-				System.out.println("[Lector cerrado].");
+				clientSocket = serverSocket.accept();
+				clientSocket.setKeepAlive(true);
+				clientRequest.append("[Se ha conectado un cliente].\n");	
+				new RequestHandler(clientSocket);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				if(e instanceof SocketException){
